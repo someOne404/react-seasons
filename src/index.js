@@ -1,33 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect} from 'react';
 import ReactDOM from 'react-dom';
+import SeasonDisplay from './SeasonDisplay';
+import Loader from './Loader';
 
+const App = () => {
+    const [lat, setLat] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
 
-class App extends React.Component {
-    //initialize the state object
-
-    // equivalent as having a constructor and put state vairable in it
-    state = { lat: null, errorMessage: '' };
- 
-    componentDidMount() { // initial set up
+    useEffect(() => {
         window.navigator.geolocation.getCurrentPosition(
-            position => this.setState({ lat: position.coords.latitude }),
-            err => this.setState({ errorMessage: err.message })
+            position => setLat(position.coords.latitude),
+            err => setErrorMessage(err.message)
         );
+    }, []);
+
+    // componentDidMount: useEffect(function, []), 
+    // componentDidMount+update: useEffect(function, [someVar])
+
+    let content;
+    if (errorMessage) {
+        content = <div>Error: {errorMessage}</div>
+    }
+    else if (lat) {
+        content = <SeasonDisplay lat={lat} />
+    }
+    else {
+        content = <Loader message="Please accept location request"/>;
     }
 
-    //required to implement render()
-    render() {
-        if (this.state.errorMessage && !this.state.lat) {
-            return <div>Error: {this.state.errorMessage}</div>;
-        }
-
-        if (!this.state.errorMessage && this.state.lat) {
-            return <div>Latitude: {this.state.lat}</div>;
-        }
-
-        return <div>Loading!</div>;
-    }
-}
+    return (
+        <div className="border red">
+            {content}
+        </div>
+    );
+};
 
 ReactDOM.render(
     <App />,
